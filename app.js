@@ -1,0 +1,31 @@
+const express = require('express')
+const app = express()
+const port = 3000
+
+// Static Files
+app.use(express.static('public'));
+// Specific folder example
+// app.use('/css', express.static(__dirname + 'public/css'))
+// app.use('/js', express.static(__dirname + 'public/js'))
+// app.use('/images', express.static(__dirname + 'public/images'))
+
+// Set View's
+app.set('views', './views');
+app.set('view engine', 'ejs');
+
+// Navigation
+
+app.get('', (req, res) => {
+    res.render('welcome')
+})
+
+
+app.get('/login', (req, res) => {
+    res.render(__dirname + '/views/login.ejs')
+})
+
+app.get('/register', (req, res) => {
+    res.render(__dirname + '/views/register.ejs')
+})
+
+app.listen(port, () => console.info(`App listening on port ${port}`))
