@@ -1,31 +1,60 @@
 const express = require('express')
+const mongoose = require('mongoose');
+const passport = require('passport');
+const flash = require('connect-flash');
+const session = require('express-session');
 const app = express()
 const port = 3000
 
-// Static Files
-app.use(express.static('public'));
-// Specific folder example
-// app.use('/css', express.static(__dirname + 'public/css'))
-// app.use('/js', express.static(__dirname + 'public/js'))
-// app.use('/images', express.static(__dirname + 'public/images'))
+// Passport Config
+require('./config/passport')(passport);
 
-// Set View's
-app.set('views', './views');
+// DB Config
+const db = require('./config/keys').mongoURI;
+
+// Connect to MongoDB
+mongoose
+  .connect(
+    db,
+    { useNewUrlParser: true ,useUnifiedTopology: true}
+  )
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.log(err));
+
+// EJS
 app.set('view engine', 'ejs');
 
-// Navigation
+// Express body parser
+app.use(express.urlencoded({ extended: true }));
 
-app.get('', (req, res) => {
-    res.render('welcome')
-})
+// Express session
+app.use(
+  session({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true
+  })
+);
+app.use(express.static('public'));
+app.use(express.static(__dirname + '/public'));
+app.use('/images', express.static(__dirname + 'public/images'))
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
+// Connect flash
+app.use(flash());
 
-app.get('/login', (req, res) => {
-    res.render(__dirname + '/views/login.ejs')
-})
+// Global variables
+app.use(function(req, res, next) {
+  res.locals.success_msg = req.flash('success_msg');
+  res.locals.error_msg = req.flash('error_msg');
+  res.locals.error = req.flash('error');
+  next();
+});
 
-app.get('/register', (req, res) => {
-    res.render(__dirname + '/views/register.ejs')
-})
+// Routes
+app.use('/', require('./routes/index.js'));
+app.use('/users', require('./routes/users.js'));
 
 app.listen(port, () => console.info(`App listening on port ${port}`))
