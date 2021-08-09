@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const passport = require('passport');
-
 const User = require('../models/User');
 const { forwardAuthenticated } = require('../config/auth');
+const { validate } = require('../models/User');
 
 router.get('/login', forwardAuthenticated, (req, res) => res.render('login'));
 
@@ -20,6 +20,16 @@ router.post('/register', (req, res) => {
 
   if (password.length < 6) {
     errors.push({ msg: 'Password must be at least 6 characters' });
+  }
+
+  function validateEmail(email) 
+    {
+        var re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+        return re.test(email);
+    }
+
+  if (!validateEmail(email)) {
+    errors.push({ msg: 'Please enter a valid email' });
   }
 
   if (errors.length > 0) {
